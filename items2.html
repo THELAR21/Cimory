@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cimory UHT</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 420px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      color: #007bff;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .info {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 14px;
+      color: #555;
+    }
+
+    .group-box {
+      background-color: #e9f5ff;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+    }
+
+    .group-pcs {
+      background-color: #fff3e6;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+    }
+
+    .section {
+      margin-bottom: 15px;
+    }
+
+    .label {
+      font-weight: bold;
+      margin-bottom: 5px;
+      font-size: 15px;
+    }
+
+    .counter {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .counter button {
+      padding: 5px 12px;
+      font-size: 18px;
+      border: none;
+      border-radius: 6px;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+
+    .jumlah {
+      font-size: 18px;
+      min-width: 30px;
+      text-align: center;
+    }
+
+    .harga, .sub-total {
+      font-size: 14px;
+      color: #444;
+      margin-top: 5px;
+      text-align: center;
+    }
+
+    .total {
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+      margin-top: 20px;
+      padding-top: 10px;
+      border-top: 1px solid #ccc;
+    }
+
+    input[type="number"] {
+      width: 95%;
+      padding: 6px;
+      text-align: center;
+      margin-top: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+    }
+
+    .warning {
+      color: red;
+      text-align: center;
+      font-size: 13px;
+      margin-top: 5px;
+    }
+
+    .total-pcs-info {
+      text-align: center;
+      font-size: 14px;
+      margin-top: 5px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Detail Cimory UHT</h1>
+    <div class="info"><strong>1 Karton = 24 pcs</strong></div>
+
+    <!-- BAGIAN KARTON -->
+    <div class="group-box">
+      <div class="section">
+        <div class="label">Stok Maks Karton / Hari</div>
+        <input type="number" id="stokMaxKarton" value="3" min="1" onchange="validasiKarton()" />
+      </div>
+
+      <div class="section">
+        <div class="label">Jumlah Karton</div>
+        <div class="counter">
+          <button onclick="ubahKarton(-1)">-</button>
+          <div id="jumlahKarton" class="jumlah">3</div>
+          <button onclick="ubahKarton(1)">+</button>
+        </div>
+        <div class="harga">Harga/karton: Rp <span id="hargaPerKarton">86.400</span></div>
+        <div class="sub-total">Subtotal Karton: Rp <span id="subTotalKarton">259.200</span></div>
+        <div id="warningKarton" class="warning" style="display:none;">Melebihi stok maksimum!</div>
+      </div>
+
+      <div class="section">
+        <div class="label">Jumlah PCS</div>
+        <input type="number" id="inputPcs" readonly />
+        <div class="harga">Otomatis dari jumlah karton</div>
+      </div>
+
+      <div class="total-pcs-info">
+        Total PCS: <span id="totalPcs">72</span> pcs
+      </div>
+    </div>
+
+    <!-- BAGIAN PCS TAMBAHAN -->
+    <div class="group-pcs">
+      <div class="section">
+        <div class="label">PCS Tambahan</div>
+        <div class="counter">
+          <button onclick="ubahPcsTambahan(-1)">-</button>
+          <div id="jumlahPcsTambahan" class="jumlah">0</div>
+          <button onclick="ubahPcsTambahan(1)">+</button>
+        </div>
+        <div class="harga">Harga/pcs: Rp <span id="hargaPerPcs">3.600</span></div>
+        <div class="sub-total">Subtotal PCS: Rp <span id="subTotalPcs">0</span></div>
+      </div>
+    </div>
+
+    <div class="total">
+      Total Harga: Rp <span id="totalHarga">259.200</span>
+    </div>
+  </div>
+
+  <script>
+    let jumlahKarton = 3;
+    let pcsTambahan = 0;
+    const isiPerKarton = 24;
+    const hargaKarton = 86400;
+    const hargaPcs = 3600;
+
+    function formatRupiah(angka) {
+      return angka.toLocaleString("id-ID");
+    }
+
+    function updateTampilan() {
+      const stokMax = parseInt(document.getElementById("stokMaxKarton").value);
+
+      if (jumlahKarton > stokMax) {
+        jumlahKarton = stokMax;
+        document.getElementById("warningKarton").style.display = "block";
+      } else {
+        document.getElementById("warningKarton").style.display = "none";
+      }
+
+      const totalPcs = jumlahKarton * isiPerKarton;
+      const subTotalKarton = jumlahKarton * hargaKarton;
+      const subTotalPcs = pcsTambahan * hargaPcs;
+      const total = subTotalKarton + subTotalPcs;
+
+      document.getElementById("jumlahKarton").innerText = jumlahKarton;
+      document.getElementById("jumlahPcsTambahan").innerText = pcsTambahan;
+      document.getElementById("subTotalKarton").innerText = formatRupiah(subTotalKarton);
+      document.getElementById("subTotalPcs").innerText = formatRupiah(subTotalPcs);
+      document.getElementById("totalHarga").innerText = formatRupiah(total);
+      document.getElementById("totalPcs").innerText = totalPcs;
+      document.getElementById("inputPcs").value = totalPcs;
+
+      document.getElementById("hargaPerKarton").innerText = formatRupiah(hargaKarton);
+      document.getElementById("hargaPerPcs").innerText = formatRupiah(hargaPcs);
+    }
+
+    function ubahKarton(delta) {
+      const stokMax = parseInt(document.getElementById("stokMaxKarton").value);
+      let hasil = jumlahKarton + delta;
+      if (hasil >= 0 && hasil <= stokMax) {
+        jumlahKarton = hasil;
+        updateTampilan();
+      }
+    }
+
+    function ubahPcsTambahan(delta) {
+      let hasil = pcsTambahan + delta;
+      if (hasil >= 0) {
+        pcsTambahan = hasil;
+        updateTampilan();
+      }
+    }
+
+    function validasiKarton() {
+      updateTampilan();
+    }
+
+    updateTampilan();
+  </script>
+
+</body>
+</html>
